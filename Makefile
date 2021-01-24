@@ -1,20 +1,24 @@
-CC = gcc
-CFLAGS = -g -Wall --std=gnu99
+CXX = gcc
+CXXFLAGS = -std=gnu99 -g
 
-movies_by_year: main.o
-	$(CC) $(CFLAGS) -o $@ $^
+ODIR=obj
 
-movies.o : movies.c
+OBJS = main.o movies.o
 
-memCheckSpellChecker :
-	valgrind --tool=memcheck --leak-check=yes movies_by_year
+SRCS = main.c movies.c
 
-clean :
-	-rm *.o
-	-rm movies_by_year
+HEADERS = movies.h
 
-memory:
-	valgrind --leak-check=yes --show-reachable=yes ./movies_by_year movies.csv
+movies_by_year:
+	${CXX} ${CXXFLAGS} ${SRCS} -o movies_by_year
+	
+.PHONY: clean
+
+clean:
+	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ movies_by_year
 
 run:
-	./movies_by_year movies.csv
+	./movies_by_year
+	
+memcheck:
+	valgrind --leak-check=yes --show-reachable=yes ./movies_by_year
