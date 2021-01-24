@@ -8,14 +8,23 @@
 // uncomment the following line or you might get a compiler warning
 //#define _GNU_SOURCE
 //
-// ref: https://stackoverflow.com/questions/13167971/segmentation-fault-with-sscanf
-// ref: studentDemo example file from canvas
+// ref:
+// repl: 3_5 stat from explorations
+// ref: 
+//  https://stackoverflow.com/questions/612097/how-can-i-get-the-list-of-files-in-a-directory-using-c-or-c
 //
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <dirent.h>
 //#include "movies.h"
+
+#define PREFIX "movie_"  // debug should be movies_ for final....
 
 // Movie Processing
 
@@ -37,7 +46,8 @@ void print_debug_languages(struct movie*); // Print the languages to make sure i
 void file_menu();
 
 
-// File Processing
+// File/ Folder Processing
+void find_largest_file();
 
 
 
@@ -119,7 +129,40 @@ int main(int argc, char* argv[])
 *
 *************************************************/
 
+void find_largest_file()
+{
+    int fileSize = 0;
+    char entryName[256];
 
+    struct stat dirStat;
+    struct dirent* ent;
+    
+    DIR* currDir; //vsprojects/movies/
+    
+    if ((currDir = opendir("./")) != NULL) {
+        // Print the files in currDir
+        while ((ent = readdir(currDir)) != NULL) {
+            //printf("%s\n",ent->d_name);
+            if(strncmp(PREFIX, ent->d_name, strlen(PREFIX)) == 0 ){
+                stat(ent->d_name, &dirStat);
+                if(dirStat.st_size > fileSize) 
+                {
+                    fileSize = dirStat.st_size;
+                    memset(entryName,'\0', sizeof(entryName));
+                    strcpy(entryName, ent->d_name);
+                }
+            }
+        }
+        printf("%s | %d\n", entryName, fileSize);
+        closedir(currDir);
+    }
+    else {
+        // Couldn't open directory
+        perror("");
+        return EXIT_FAILURE;
+    }
+    
+}
 
 /************************************************
 *   menu
@@ -143,7 +186,7 @@ void file_menu()
         switch (choice) {
         case 1:
             printf("You selected choice #1.\n\n");
-            file_menu();
+            find_largest_file();
             break;
         case 2:
             printf("You selected choice #2.\n\n");
