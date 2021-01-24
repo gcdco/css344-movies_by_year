@@ -12,3 +12,9 @@ memCheckSpellChecker :
 clean :
 	-rm *.o
 	-rm movies_by_year
+
+memory:
+	valgrind --leak-check=yes --show-reachable=yes ./movies_by_year movies.csv
+
+run:
+	./movies_by_year movies.csv

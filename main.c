@@ -24,7 +24,8 @@
 #include <dirent.h>
 //#include "movies.h"
 
-#define PREFIX "movie_"  // debug should be movies_ for final....
+#define PREFIX "movies_"  // debug should be movies_ for final....
+#define FILEEXT ".csv"
 
 // Movie Processing
 
@@ -44,11 +45,16 @@ void print_debug_languages(struct movie*); // Print the languages to make sure i
 
 // Menu
 void file_menu();
-
+void print_processing_file(char*);
 
 // File/ Folder Processing
-void find_largest_file();
+int find_largest_file(char*);
+struct dirent* get_entry(DIR*);
+void get_stat(struct dirent*, struct stat*);
+int file_by_name(char *entryName);
+int find_smallest_file(char*);
 
+// Function Pointer
 
 
 
@@ -78,18 +84,9 @@ struct movie
 */
 int main(int argc, char* argv[])
 {
-    // Process movie data from file
-    if (argc < 2)
-    {
-        printf("You must provide the name of the file to process\n");
-        printf("Example usage: ./movies movie_info.txt\n");
-        return EXIT_FAILURE;
-    }
-
     // Create Linked List of structs
-    struct movie *list = processFile(argv[1]);
+    //struct movie *list = processFile(argv[1]);
     
-
     // Give user choices
     // And Print movie data
     int choice = 0;
@@ -119,7 +116,7 @@ int main(int argc, char* argv[])
     }
 
     // Free the movie LL structure allocated
-    destroy_list(list);
+    //destroy_list(list);
 
     return EXIT_SUCCESS;
 }
@@ -129,10 +126,27 @@ int main(int argc, char* argv[])
 *
 *************************************************/
 
-void find_largest_file()
+struct dirent* get_entry(DIR* curDir)
 {
+    struct dir* entry = readdir(curDir);
+    return entry;
+}
+
+void get_stat(struct dirent* entry, struct stat *directory_stat)
+{
+    stat(entry->d_name, &directory_stat);
+}
+
+// Find the largest file w/ PREFIX and update fileName
+// Return 0 if not found and 1 if found
+//
+int find_largest_file(char* fileName)
+{
+    int fileFound = 0;
     int fileSize = 0;
-    char entryName[256];
+    //char ext[5] = ".csv";
+    
+    //char entryName[256];
 
     struct stat dirStat;
     struct dirent* ent;
@@ -141,19 +155,26 @@ void find_largest_file()
     
     if ((currDir = opendir("./")) != NULL) {
         // Print the files in currDir
-        while ((ent = readdir(currDir)) != NULL) {
+        while ((ent = get_entry(currDir)) != NULL) { //while ((ent = readdir(currDir)) != NULL)
             //printf("%s\n",ent->d_name);
             if(strncmp(PREFIX, ent->d_name, strlen(PREFIX)) == 0 ){
-                stat(ent->d_name, &dirStat);
-                if(dirStat.st_size > fileSize) 
-                {
-                    fileSize = dirStat.st_size;
-                    memset(entryName,'\0', sizeof(entryName));
-                    strcpy(entryName, ent->d_name);
+                char* found;
+                if(found = strstr(ent->d_name, ".csv") != NULL){
+                    stat(ent->d_name, &dirStat);//get_stat(ent, &dirStat);
+                    // Function pointer:
+                    // int (*cmp_file_sizeGreater)(struct stat, int)
+                    if(dirStat.st_size > fileSize) 
+                    {
+                        fileSize = dirStat.st_size;
+                        memset(fileName,'\0', sizeof(fileName));
+                        strcpy(fileName, ent->d_name);
+                    }
+                    fileFound =1;
                 }
+                
             }
         }
-        printf("%s | %d\n", entryName, fileSize);
+        //printf("%s | %d\n", fileName, fileSize);
         closedir(currDir);
     }
     else {
@@ -161,8 +182,78 @@ void find_largest_file()
         perror("");
         return EXIT_FAILURE;
     }
-    
+    return fileFound;
 }
+
+int find_smallest_file(char* fileName)
+{
+    int fileFound = 0;
+    // Set to arbitrarily large value
+    int fileSize = 214748364;
+    //char entryName[256];
+
+    struct stat dirStat;
+    struct dirent* ent;
+    
+    DIR* currDir; //vsprojects/movies/
+    
+    if ((currDir = opendir("./")) != NULL) {
+        // Print the files in currDir
+        while ((ent = get_entry(currDir)) != NULL) { //while ((ent = readdir(currDir)) != NULL)
+            //printf("%s\n",ent->d_name);
+            if(strncmp(PREFIX, ent->d_name, strlen(PREFIX)) == 0 ){
+                char* found;
+                if(found = strstr(ent->d_name, ".csv") != NULL){
+                    stat(ent->d_name, &dirStat);//get_stat(ent, &dirStat);
+                    // Function pointer:
+                    // int (*cmp_file_sizeGreater)(struct stat, int)
+                    if(dirStat.st_size < fileSize) 
+                    {
+                        fileSize = dirStat.st_size;
+                        memset(fileName,'\0', sizeof(fileName));
+                        strcpy(fileName, ent->d_name);
+                    }
+                }
+            fileFound = 1;    
+            }
+        }
+        closedir(currDir);
+    }
+    else {
+        // Couldn't open directory
+        perror("");
+        return EXIT_FAILURE;
+    }
+    return fileFound;
+}
+
+int file_by_name(char *entryName)
+{
+    //char entryName[256];
+    int foundFile = 0;
+    struct dirent* ent;
+    
+    DIR* currDir; //vsprojects/movies/
+    
+    if ((currDir = opendir("./")) != NULL) {
+        // Print the files in currDir
+        while ((ent = get_entry(currDir)) != NULL) { //while ((ent = readdir(currDir)) != NULL)
+            //printf("%s\n",ent->d_name);
+            if(strncmp(entryName, ent->d_name, strlen(entryName)) == 0 ){
+                foundFile = 1;
+            }
+        }
+        
+        closedir(currDir);
+    }
+    else {
+        // Couldn't open directory
+        perror("");
+        return EXIT_FAILURE;
+    }
+    return foundFile;
+}
+
 
 /************************************************
 *   menu
@@ -172,6 +263,7 @@ void find_largest_file()
 void file_menu()
 {
     int choice = 0;
+    char fileName[256];
     while (choice != 4) {
 
         printf("Which file do you want to process?\n");
@@ -186,13 +278,36 @@ void file_menu()
         switch (choice) {
         case 1:
             printf("You selected choice #1.\n\n");
-            find_largest_file();
+            if(find_largest_file(fileName) == 1) {
+                print_processing_file(fileName);
+                // Create Linked List of structs
+                struct movie *list = processFile(fileName);
+            } else {
+                printf("\nThe file: %s, was not found.\n", fileName);
+            }
+            
             break;
         case 2:
             printf("You selected choice #2.\n\n");
+            if(find_smallest_file(fileName) == 1){
+                print_processing_file(fileName);
+                // Create Linked List of structs
+                //struct movie *list = processFile(fileName);
+            } else {
+                printf("\nThe file: %s, was not found.\n", fileName);
+            }
             break;
         case 3:
-            printf("You selected choice #3\n");
+            printf("Enter a name of a file: ");
+            scanf("%s", fileName);
+            if(file_by_name(fileName) == 1)
+            {
+                print_processing_file(fileName);
+                // Create Linked List of structs
+                //struct movie *list = processFile(fileName);
+            } else {
+                printf("\nThe file: %s, was not found.\n", fileName);
+            }
             break;
         case 4:
             printf("Goodbye\n");
@@ -201,7 +316,15 @@ void file_menu()
         default:
             printf("You entered an incorrect choice.Try again.\n\n");
         }
+        // struct movie *list = processFile(fileName);
+        // destroy_list(list);
     }
+}
+
+// Print the name of the file to be processed
+void print_processing_file(char *fileName)
+{
+    printf("Now processing the chosen file named %s\n", fileName);
 }
 
 /************************************************
