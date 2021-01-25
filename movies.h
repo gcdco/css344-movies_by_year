@@ -8,20 +8,24 @@
 struct linkedList;
 
 // Holds the languages in a linked list structure that struct movie contains a pointer for
-struct language;
+struct language
+{
+    // Individual language
+    char* lang;
+    struct language* next;
+};
 
 // Holds the data about the movie
-struct movie;
-// {
-//     char* title;
-//     int year;
-//     // Print to .1 decimal place %.1f
-//     double rating;
-//     // Hold the head of the language structure
-//     struct language* language;
-//     struct movie* next;
-// };
-
+struct movie
+{
+    char* title;
+    int year;
+    // Print to .1 decimal place %.1f
+    double rating;
+    // Hold the head of the language structure
+    struct language* language;
+    struct movie* next;
+};
 
 
 /****************************************************************************************************
@@ -36,11 +40,11 @@ struct movie;
 #endif
 
 struct linkedList* linkedListCreate();
-// void linkedListDestroy(struct LinkedList*);
-// void linkedListPrint(struct LinkedList*);
+// void linkedListDestroy(struct linkedList*);
+void linkedListPrint(struct linkedList*);
 int linkedListIsEmpty(struct linkedList*);
 void linkedListAddBack(struct linkedList*, TYPE);
-// void linkedListRemoveFront(struct LinkedList*);
+void linkedListRemoveFront(struct linkedList*);
 
 /****************************************************************************************************
 * Movie LL structure

@@ -25,6 +25,7 @@
 #include <dirent.h>
 #include "movies.h"
 
+
 #define PREFIX "movies_"  
 #define FILEEXT ".csv"
 #define DIR_PREFIX "duensing.movies."
@@ -64,41 +65,61 @@ int main(int argc, char* argv[])
     
     /* -------------- DEBUG PLAYGROUND -------------- */
 
-    //create_directory();
+    char fileName[] = "movies_zero.csv";
+    struct movie* list = processFile(fileName);
+    //print_movie_list(list);
+
+    struct movie* head;
+    head = list->next;
+    
+    struct linkedList* newList = linkedListCreate();
+
+    while (head != NULL)
+    {
+        printf("Adding: %s\n", head->title);
+        linkedListAddBack(newList, head);
+        head = head->next;
+    }
+    printf(" ----------------------------- ");
+    printf(" -------- Printing LL -------- ");
+    printf(" ----------------------------- \n");
+    linkedListPrint(newList);
+
+    destroy_list(list);
 
 
     /* -------------- END DEBUG PLAYGROUND -------------- */
 
-    // Create Linked List of structs
-    //struct movie *list = processFile(argv[1]);
+    // // Create Linked List of structs
+    // //struct movie *list = processFile(argv[1]);
     
-    // Give user choices
-    // And Print movie data
-    int choice = 0;
-    // For choice 3
-    char lang[21];
-    while (choice != 2) {
+    // // Give user choices
+    // // And Print movie data
+    // int choice = 0;
+    // // For choice 3
+    // char lang[21];
+    // while (choice != 2) {
         
 
-        //printf("\n");
-        printf("1. Select file to process\n");
-        printf("2. Exit the program\n");
-        printf("\nEnter a choice from 1 or 2: ");
-        scanf("%d", &choice);
-        printf("\n");
+    //     //printf("\n");
+    //     printf("1. Select file to process\n");
+    //     printf("2. Exit the program\n");
+    //     printf("\nEnter a choice from 1 or 2: ");
+    //     scanf("%d", &choice);
+    //     printf("\n");
 
-        switch (choice) {
-        case 1:
-            printf("You selected choice #1.\n\n");
-            file_menu();
-            break;
-        case 2:
-            printf("Goodbye\n");
-            break;
-        default:
-            printf("You entered an incorrect choice.Try again.\n\n");
-        }
-    }
+    //     switch (choice) {
+    //     case 1:
+    //         printf("You selected choice #1.\n\n");
+    //         file_menu();
+    //         break;
+    //     case 2:
+    //         printf("Goodbye\n");
+    //         break;
+    //     default:
+    //         printf("You entered an incorrect choice.Try again.\n\n");
+    //     }
+    // }
 
     // Free the movie LL structure allocated
     //destroy_list(list);
@@ -312,7 +333,15 @@ void process_file_name(char* fileName)
     // Create Linked List of structs
     struct movie *list = processFile(fileName);
     // Debug:
-    print_movie_list(list);
+    // print_movie_list(list);
+
+    struct movie* head;
+    head = list;
+    while(head != NULL)
+    {
+        print_debug_movie(head);
+        head = head->next;
+    }
 
 
     // Free the memory

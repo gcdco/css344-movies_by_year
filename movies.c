@@ -5,24 +5,30 @@
 #include <string.h>
 #include <assert.h>
 
-// Holds the data about the movie
-struct movie
+struct movieLink 
 {
     char* title;
-    int year;
-    // Print to .1 decimal place %.1f
-    double rating;
-    // Hold the head of the language structure
-    struct language* language;
-    struct movie* next;
+    struct movieLink* next;
 };
 
-struct language
-{
-    // Individual language
-    char* lang;
-    struct language* next;
-};
+// Holds the data about the movie
+// struct movie
+// {
+//     char* title;
+//     int year;
+//     // Print to .1 decimal place %.1f
+//     double rating;
+//     // Hold the head of the language structure
+//     struct language* language;
+//     struct movie* next;
+// };
+
+//struct language
+// {
+//     // Individual language
+//     char* lang;
+//     struct language* next;
+// };
 
 struct linkedList
 {
@@ -40,9 +46,9 @@ struct linkedList
 static void init(struct linkedList* list)
 {
     // Allocate memory for sentinels 
-    list->frontSentinel = (struct movie*) malloc(sizeof(struct movie));
+    list->frontSentinel = (struct movieLink*) malloc(sizeof(struct movieLink));
     assert(list->frontSentinel != NULL);
-    list->backSentinel = (struct movie*) malloc(sizeof(struct movie));
+    list->backSentinel = (struct movieLink*) malloc(sizeof(struct movieLink));
     assert(list->backSentinel != NULL);
     // Hook up sentinels
     list->frontSentinel->next = list->backSentinel;
@@ -55,8 +61,8 @@ static void init(struct linkedList* list)
 // Allocate memory for a
 struct linkedList* linkedListCreate()
 {
-    printf("inside linkedListCreate()");
     struct linkedList* list = malloc(sizeof(struct linkedList));
+    // Initialize the list
     init(list);
     return list;
 }
@@ -83,16 +89,31 @@ int linkedListIsEmpty(struct linkedList* list)
 //  link = backSentinel
 //  newLink = new struct movie
 //
-static void addLinkBefore(struct linkedList* list, struct movie* link, TYPE newLink)
+static void addLinkBefore(struct linkedList* list, struct movie* link, TYPE copyLink)
 {
     assert(list != NULL);
-    //struct movie* newLink = (struct movie*) malloc(sizeof(struct movie));
-    //assert(newLink != NULL);
+    // createMovie(char* mov_title, int year, char* languages, double rating)
+    //char lang[] = "[English;French]";
+    //struct movie* newLink = createMovie(copyLink->title, copyLink->year, lang, copyLink->rating);
+    newLink = copyLink;
+    assert(newLink != NULL);
     assert(link != NULL);
-    
-    link->next->next = newLink;
-    link->next = newLink;
 
+    // Case with no links. have to link up front and back sentinels to new link
+    if(list->size == 0) // replace with isempty function
+    {
+        // Connect the frontSentinel
+        link->next->next = newLink;
+        // Connect the back sentinel
+        link->next = newLink;
+    }
+    // Add a new link when LL is not empty
+    // Connect the last link pointed to by backSentinel to the newLink
+    link->next->next = newLink;
+    // Connect the new last link to the backSentinel
+    newLink->next = link;
+    // Connect the backSentinel to the new link
+    link->next = newLink;
     // increase size
     list->size++;
 }
@@ -106,13 +127,37 @@ void linkedListAddBack(struct linkedList* list, TYPE value)
     addLinkBefore(list, list->backSentinel, value);
 }
 
+// link = frontSentinel
+//
+static void removeLink(struct linkedList* list, struct movie* link)
+{
+    //assert(list != NULL);
+    // Place holder
+    struct movie* tmp = link->next;
+    link->next = tmp->next;
+    //destroy_movie_link()  // TODO: destroy the data in the link
+    free(tmp);
+    tmp = NULL;
+    list->size--;
+}
 
+void linkedListRemoveFront(struct linkedList* list)
+{
+    //assert(list != NULL); // Will this compile?
+    removeLink(list, list->frontSentinel);
+}
 
-// void linkedListRemoveFront(struct LinkedList* list)
-// {
-//     printf("\nInside linkedListRemoveFront\n");
-// }
-
+void linkedListPrint(struct linkedList* list)
+{
+    struct movie* head = list->frontSentinel->next;
+    while(head->next != list->backSentinel)
+    {
+        printf("%s | ", head->title);
+        printf("%d | ", head->year);
+        // Print double to single decimal place
+        printf("%.1lf\n", head->rating);
+    }
+}
 
 /************************************************************
 *   HW1: Make LL structure for movies in a .csv file from
