@@ -311,7 +311,8 @@ void process_file_name(char* fileName)
 
     // Create Linked List of structs
     struct movie *list = processFile(fileName);
-    
+    // Debug:
+    print_movie_list(list);
 
 
     // Free the memory

@@ -1,29 +1,51 @@
 #ifndef MOVIES_HPP
 #define MOVIES_HPP
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// #include <stdio.h>
+// #include <stdlib.h>
+// #include <string.h>
+
+struct linkedList;
 
 // Holds the languages in a linked list structure that struct movie contains a pointer for
-struct language
-{
-    // Individual language
-    char* lang;
-    struct language* next;
-};
+struct language;
 
 // Holds the data about the movie
-struct movie
-{
-    char* title;
-    int year;
-    // Print to .1 decimal place %.1f
-    double rating;
-    // Hold the head of the language structure
-    struct language* language;
-    struct movie* next;
-};
+struct movie;
+// {
+//     char* title;
+//     int year;
+//     // Print to .1 decimal place %.1f
+//     double rating;
+//     // Hold the head of the language structure
+//     struct language* language;
+//     struct movie* next;
+// };
+
+
+
+/****************************************************************************************************
+* More general LL structure
+*
+****************************************************************************************************/
+
+#ifndef TYPE
+// Trying a pointer... Is this right? 12:30am
+// This fixed the error's compiling
+#define TYPE struct movie*  
+#endif
+
+struct linkedList* linkedListCreate();
+// void linkedListDestroy(struct LinkedList*);
+// void linkedListPrint(struct LinkedList*);
+int linkedListIsEmpty(struct linkedList*);
+void linkedListAddBack(struct linkedList*, TYPE);
+// void linkedListRemoveFront(struct LinkedList*);
+
+/****************************************************************************************************
+* Movie LL structure
+*
+****************************************************************************************************/
 
 struct movie* processFile(char*); // Create the LL structure
 struct movie* createMovie(char* mov_title, int year, char* languages, double rating); // Create a link

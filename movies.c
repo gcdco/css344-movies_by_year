@@ -1,5 +1,123 @@
-
 #include "movies.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+
+// Holds the data about the movie
+struct movie
+{
+    char* title;
+    int year;
+    // Print to .1 decimal place %.1f
+    double rating;
+    // Hold the head of the language structure
+    struct language* language;
+    struct movie* next;
+};
+
+struct language
+{
+    // Individual language
+    char* lang;
+    struct language* next;
+};
+
+struct linkedList
+{
+    struct movie* frontSentinel;
+    struct movie* backSentinel;
+    int size;
+};
+
+/************************************************************
+*   HW2: Create LL structure for movies per year from user
+*   selected file
+*   - More general LL creation here
+************************************************************/
+
+static void init(struct linkedList* list)
+{
+    // Allocate memory for sentinels 
+    list->frontSentinel = (struct movie*) malloc(sizeof(struct movie));
+    assert(list->frontSentinel != NULL);
+    list->backSentinel = (struct movie*) malloc(sizeof(struct movie));
+    assert(list->backSentinel != NULL);
+    // Hook up sentinels
+    list->frontSentinel->next = list->backSentinel;
+    list->backSentinel->next =  list->frontSentinel;
+    
+    // initialize start size
+    list->size = 0;
+}
+
+// Allocate memory for a
+struct linkedList* linkedListCreate()
+{
+    printf("inside linkedListCreate()");
+    struct linkedList* list = malloc(sizeof(struct linkedList));
+    init(list);
+    return list;
+}
+
+// void linkedListDestroy(struct LinkedList* list)
+// {
+//     printf("\nInside linkedListDestroy\n");
+// }
+
+// void linkedListPrint(struct LinkedList* list)
+// {
+//     printf("\nInside linkedListPrint\n");
+// }
+
+int linkedListIsEmpty(struct linkedList* list)
+{
+    printf("\nInside linkedListIsEmpty\n");
+    assert(list != NULL);
+    // Is the LL empty?
+    if(list->size == 0){ return 1;}
+    else { return 0; }
+}
+//
+//  link = backSentinel
+//  newLink = new struct movie
+//
+static void addLinkBefore(struct linkedList* list, struct movie* link, TYPE newLink)
+{
+    assert(list != NULL);
+    //struct movie* newLink = (struct movie*) malloc(sizeof(struct movie));
+    //assert(newLink != NULL);
+    assert(link != NULL);
+    
+    link->next->next = newLink;
+    link->next = newLink;
+
+    // increase size
+    list->size++;
+}
+
+// Add a link to the back of the list
+// create a movie and pass it here where TYPE is listed
+//
+void linkedListAddBack(struct linkedList* list, TYPE value)
+{
+    assert(list != NULL);
+    addLinkBefore(list, list->backSentinel, value);
+}
+
+
+
+// void linkedListRemoveFront(struct LinkedList* list)
+// {
+//     printf("\nInside linkedListRemoveFront\n");
+// }
+
+
+/************************************************************
+*   HW1: Make LL structure for movies in a .csv file from
+*   the command line
+************************************************************/
 
 // Return a linked list of movies by parsing data from each line of the specified file.
 // param: filePath - file passed in as a command line argument
