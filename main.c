@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -26,10 +27,16 @@
 
 #define PREFIX "movies_"  
 #define FILEEXT ".csv"
+#define DIR_PREFIX "duensing.movies."
+
+
 
 // Menu
 void file_menu();
 void print_processing_file(char*);
+void process_file_name(char*);
+void file_not_found_msg();
+
 
 // File/ Folder Processing
 int find_largest_file(char*);
@@ -37,6 +44,12 @@ struct dirent* get_entry(DIR*);
 void get_stat(struct dirent*, struct stat*);
 int file_by_name(char *entryName);
 int find_smallest_file(char*);
+
+void create_directory();
+void create_file();
+
+// Random Number
+int random_number();
 
 // Function Pointer
 
@@ -46,6 +59,16 @@ int find_smallest_file(char*);
 */
 int main(int argc, char* argv[])
 {
+    // Set the seed to current time
+    srand(time(0));
+    
+    /* -------------- DEBUG PLAYGROUND -------------- */
+
+    //create_directory();
+
+
+    /* -------------- END DEBUG PLAYGROUND -------------- */
+
     // Create Linked List of structs
     //struct movie *list = processFile(argv[1]);
     
@@ -84,7 +107,7 @@ int main(int argc, char* argv[])
 }
 
 /************************************************
-*   File Processing
+*   File Selection
 *
 *************************************************/
 
@@ -241,35 +264,23 @@ void file_menu()
         case 1:
             printf("You selected choice #1.\n\n");
             if(find_largest_file(fileName) == 1) {
-                print_processing_file(fileName);
-                // Create Linked List of structs
-                struct movie *list = processFile(fileName);
-            } else {
-                printf("\nThe file: %s, was not found.\n", fileName);
-            }
-            
+                process_file_name(fileName);
+                
+            } else { file_not_found_msg(); }            
             break;
         case 2:
             printf("You selected choice #2.\n\n");
             if(find_smallest_file(fileName) == 1){
-                print_processing_file(fileName);
-                // Create Linked List of structs
-                //struct movie *list = processFile(fileName);
-            } else {
-                printf("\nThe file: %s, was not found.\n", fileName);
-            }
+                process_file_name(fileName);
+            } else { file_not_found_msg(); }
             break;
         case 3:
             printf("Enter a name of a file: ");
             scanf("%s", fileName);
             if(file_by_name(fileName) == 1)
             {
-                print_processing_file(fileName);
-                // Create Linked List of structs
-                //struct movie *list = processFile(fileName);
-            } else {
-                printf("\nThe file: %s, was not found.\n", fileName);
-            }
+                process_file_name(fileName);
+            } else { file_not_found_msg(); }
             break;
         case 4:
             printf("Goodbye\n");
@@ -283,8 +294,86 @@ void file_menu()
     }
 }
 
+
+/************************************************
+*   Process file name
+*   Main
+*
+*************************************************/
+
+// Main function to process the fileName into an LL / 
+// create directories and files per year in fileName.csv
+//
+void process_file_name(char* fileName)
+{
+    // Print the message requirement stating which file we are processing
+    print_processing_file(fileName);
+
+    // Create Linked List of structs
+    struct movie *list = processFile(fileName);
+    
+
+
+    // Free the memory
+    destroy_list(list);
+}
+
+
+
 // Print the name of the file to be processed
 void print_processing_file(char *fileName)
 {
     printf("Now processing the chosen file named %s\n", fileName);
+}
+
+void file_not_found_msg()
+{
+    printf("You entered an incorrect choice.Try again.\n\n");
+}
+
+
+/************************************************
+*   Directories
+*
+*************************************************/
+//
+// permissions for directory: rwx r-x ---  ==> 0750
+//
+void create_directory()
+{
+    char *dirName[256];
+    // Make the directory name
+    sprintf(dirName, "%s%d", DIR_PREFIX,random_number());
+    if(mkdir(dirName, 0750) == 0) {
+        printf("Created directory with name %s\n", dirName);
+    } else {
+        printf("ERROR: could not create directory.\n");
+    }
+
+}
+
+
+/************************************************
+*   Files
+*
+*************************************************/
+
+void create_file()
+{
+    printf("Inside create_file\n");
+}
+
+
+/********************************************************************************
+*   Random Number
+*   ref: https://www.geeksforgeeks.org/generating-random-number-range-c/
+*********************************************************************************/
+
+int random_number()
+{
+    int randNumber;
+
+    randNumber = (rand() % (99999 - 0 + 1) + 0);
+
+    return randNumber;
 }
