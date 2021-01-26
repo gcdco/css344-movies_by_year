@@ -400,6 +400,11 @@ void write_movieList_to_file(struct linkedList* list, char* dirName, int year)
     {
         // Write data to the file
         write_to_file(fd, head->title);
+        // if(head->next != list->backSentinel)
+        // {
+        //     char newLine[2] = "\n";
+        //     write_to_file(fd, newLine);
+        // }
         head = head->next;
     }
 
