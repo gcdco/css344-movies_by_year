@@ -1,0 +1,5 @@
+# Files to ignore
+*.o
+*.so
+*.a
+*.zip
