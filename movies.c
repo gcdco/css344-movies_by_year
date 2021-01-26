@@ -5,11 +5,12 @@
 #include <string.h>
 #include <assert.h>
 
-struct movieLink 
-{
-    char* title;
-    struct movieLink* next;
-};
+//struct movieLink 
+// {
+//     char* title;
+//     struct movieLink* next;
+//     struct movieLink* prev;
+// };
 
 // Holds the data about the movie
 // struct movie
@@ -30,12 +31,12 @@ struct movieLink
 //     struct language* next;
 // };
 
-struct linkedList
-{
-    struct movie* frontSentinel;
-    struct movie* backSentinel;
-    int size;
-};
+// struct linkedList
+// {
+//     struct movieLink* frontSentinel;
+//     struct movieLink* backSentinel;
+//     int size;
+// };
 
 /************************************************************
 *   HW2: Create LL structure for movies per year from user
@@ -52,7 +53,9 @@ static void init(struct linkedList* list)
     assert(list->backSentinel != NULL);
     // Hook up sentinels
     list->frontSentinel->next = list->backSentinel;
-    list->backSentinel->next =  list->frontSentinel;
+    list->frontSentinel->next = NULL;                   // <====
+    list->backSentinel->prev = list->frontSentinel;      // <====
+    list->backSentinel->next =  NULL;    // list->frontSentinel;  <====
     
     // initialize start size
     list->size = 0;
@@ -85,37 +88,64 @@ int linkedListIsEmpty(struct linkedList* list)
     if(list->size == 0){ return 1;}
     else { return 0; }
 }
+
+// In an effort to make life more difficult. I am writing a function to make a new link from
+// the previous assignments movie struct w/o unneeded data... 
+//
+//
+static struct movieLink* createMovieLink(char* mov_title)
+{
+    // Allocate memory for the node
+    struct movieLink* currMovie = malloc(sizeof(struct movie));
+
+    // Allocate memory for the title
+    currMovie->title = malloc((strlen(mov_title) + 1) * sizeof(char));
+    strcpy(currMovie->title, mov_title);
+
+    currMovie->next = NULL;
+    return currMovie;
+}
+
+
 //
 //  link = backSentinel
 //  newLink = new struct movie
 //
-static void addLinkBefore(struct linkedList* list, struct movie* link, TYPE copyLink)
+static void addLinkBefore(struct linkedList* list, struct movieLink* link, TYPE copyLink)
 {
     assert(list != NULL);
     // createMovie(char* mov_title, int year, char* languages, double rating)
     //char lang[] = "[English;French]";
-    //struct movie* newLink = createMovie(copyLink->title, copyLink->year, lang, copyLink->rating);
-    newLink = copyLink;
+    struct movieLink* newLink = createMovieLink(copyLink->title);
+    //newLink = copyLink; // <== not a good idea
     assert(newLink != NULL);
     assert(link != NULL);
 
-    // Case with no links. have to link up front and back sentinels to new link
-    if(list->size == 0) // replace with isempty function
-    {
-        // Connect the frontSentinel
-        link->next->next = newLink;
-        // Connect the back sentinel
-        link->next = newLink;
-    }
-    // Add a new link when LL is not empty
-    // Connect the last link pointed to by backSentinel to the newLink
-    link->next->next = newLink;
-    // Connect the new last link to the backSentinel
-    newLink->next = link;
-    // Connect the backSentinel to the new link
-    link->next = newLink;
-    // increase size
-    list->size++;
+    //newLink->value = value;
+	newLink->prev = link->prev;
+	
+	newLink->next = link;
+	link->prev->next = newLink;
+	link->prev = newLink;
+	list->size++;
+
+    // // Case with no links. have to link up front and back sentinels to new link
+    // if(list->size == 0) // replace with isempty function
+    // {
+    //     // Connect the frontSentinel
+    //     link->next->next = newLink;
+    //     // Connect the back sentinel
+    //     link->next = newLink;
+    // }
+    // // Add a new link when LL is not empty
+    // // Connect the last link pointed to by backSentinel to the newLink
+    // link->next->next = newLink;
+    // // Connect the new last link to the backSentinel
+    // newLink->next = link;
+    // // Connect the backSentinel to the new link
+    // link->next = newLink;
+    // // increase size
+    // list->size++;
 }
 
 // Add a link to the back of the list
@@ -127,36 +157,54 @@ void linkedListAddBack(struct linkedList* list, TYPE value)
     addLinkBefore(list, list->backSentinel, value);
 }
 
+// static void removeMovieTitleMemory(struct movieLink* link)
+// {
+//     free(link->title);
+// }
+
 // link = frontSentinel
 //
-static void removeLink(struct linkedList* list, struct movie* link)
+static void removeLink(struct linkedList* list, struct movieLink* link)
 {
     //assert(list != NULL);
     // Place holder
-    struct movie* tmp = link->next;
-    link->next = tmp->next;
-    //destroy_movie_link()  // TODO: destroy the data in the link
-    free(tmp);
-    tmp = NULL;
-    list->size--;
+	link->next->prev = link->prev;
+	link->prev->next = link->next;
+	//removeMovieTitleMemory(link);
+    free(link->title);
+    free(link);
+	link = 0;
+	list->size--;
 }
 
 void linkedListRemoveFront(struct linkedList* list)
 {
     //assert(list != NULL); // Will this compile?
-    removeLink(list, list->frontSentinel);
+    removeLink(list, list->frontSentinel->next);
 }
 
 void linkedListPrint(struct linkedList* list)
 {
-    struct movie* head = list->frontSentinel->next;
-    while(head->next != list->backSentinel)
+    struct movieLink* head = list->frontSentinel->next;
+    while(head != list->backSentinel)
     {
-        printf("%s | ", head->title);
-        printf("%d | ", head->year);
-        // Print double to single decimal place
-        printf("%.1lf\n", head->rating);
+        //printf("printing\n");
+        printf("%s\n", head->title);
+        head = head->next;
     }
+}
+
+void linkedListDestroy(struct linkedList* list)
+{
+    assert(list!= NULL);
+    while(list->size != 0)//(!listLinkIsEmpy(list))
+    {
+        linkedListRemoveFront(list);
+    }
+    free(list->frontSentinel);
+    free(list->backSentinel);
+    free(list);
+    list = NULL;
 }
 
 /************************************************************

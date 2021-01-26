@@ -17,8 +17,11 @@ movies_by_year:
 clean:
 	rm -f $(ODIR)/*.o *~ core $(INCDIR)/*~ movies_by_year
 
+removedir:
+	rm -r duensing*
+
 run:
 	./movies_by_year
 	
 memcheck:
-	valgrind --leak-check=yes --show-reachable=yes ./movies_by_year
+	valgrind --leak-check=yes --track-origins=yes --show-reachable=yes ./movies_by_year

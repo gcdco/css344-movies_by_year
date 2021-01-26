@@ -5,7 +5,19 @@
 // #include <stdlib.h>
 // #include <string.h>
 
-struct linkedList;
+struct linkedList
+{
+    struct movieLink* frontSentinel;
+    struct movieLink* backSentinel;
+    int size;
+};
+
+struct movieLink 
+{
+    char* title;
+    struct movieLink* next;
+    struct movieLink* prev;
+};
 
 // Holds the languages in a linked list structure that struct movie contains a pointer for
 struct language
@@ -40,7 +52,7 @@ struct movie
 #endif
 
 struct linkedList* linkedListCreate();
-// void linkedListDestroy(struct linkedList*);
+void linkedListDestroy(struct linkedList*);
 void linkedListPrint(struct linkedList*);
 int linkedListIsEmpty(struct linkedList*);
 void linkedListAddBack(struct linkedList*, TYPE);

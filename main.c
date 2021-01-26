@@ -22,7 +22,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <dirent.h>
+#include <dirent.h>  // Directories
+#include <fcntl.h>  // Files
 #include "movies.h"
 
 
@@ -46,8 +47,11 @@ void get_stat(struct dirent*, struct stat*);
 int file_by_name(char *entryName);
 int find_smallest_file(char*);
 
-void create_directory();
-void create_file();
+int create_directory(char*);
+int create_file(char* dirName, char* fileName);
+void close_file(int);
+void write_to_file(int fileDescriptor, char* title);
+void write_movieList_to_file(struct linkedList*, char*, int);
 
 // Random Number
 int random_number();
@@ -65,64 +69,66 @@ int main(int argc, char* argv[])
     
     /* -------------- DEBUG PLAYGROUND -------------- */
 
-    char fileName[] = "movies_zero.csv";
-    struct movie* list = processFile(fileName);
-    //print_movie_list(list);
+    // char fileName[] = "movies_zero.csv";
+    // struct movie* list = processFile(fileName);
+    // //print_movie_list(list);
 
-    struct movie* head;
-    head = list->next;
+    // struct movie* head;
+    // head = list->next;
     
-    struct linkedList* newList = linkedListCreate();
+    // struct linkedList* newList = linkedListCreate();
 
-    while (head != NULL)
-    {
-        printf("Adding: %s\n", head->title);
-        linkedListAddBack(newList, head);
-        head = head->next;
-    }
-    printf(" ----------------------------- ");
-    printf(" -------- Printing LL -------- ");
-    printf(" ----------------------------- \n");
-    linkedListPrint(newList);
+    // while (head != NULL)
+    // {
+    //     printf("Adding: %s\n", head->title);
+    //     linkedListAddBack(newList, head);
+    //     head = head->next;
+    // }
+    // printf(" ----------------------------- ");
+    // printf(" -------- Printing LL -------- ");
+    // printf(" ----------------------------- \n");
+    // getchar(); // pause
+    // linkedListPrint(newList);
+    // linkedListDestroy(newList);
 
-    destroy_list(list);
+    // destroy_list(list);
 
 
     /* -------------- END DEBUG PLAYGROUND -------------- */
 
-    // // Create Linked List of structs
-    // //struct movie *list = processFile(argv[1]);
+    // Create Linked List of structs
+    //struct movie *list = processFile(argv[1]);
     
-    // // Give user choices
-    // // And Print movie data
-    // int choice = 0;
-    // // For choice 3
-    // char lang[21];
-    // while (choice != 2) {
+    // Give user choices
+    // And Print movie data
+    int choice = 0;
+    // For choice 3
+    char lang[21];
+    while (choice != 2) {
         
 
-    //     //printf("\n");
-    //     printf("1. Select file to process\n");
-    //     printf("2. Exit the program\n");
-    //     printf("\nEnter a choice from 1 or 2: ");
-    //     scanf("%d", &choice);
-    //     printf("\n");
+        //printf("\n");
+        printf("1. Select file to process\n");
+        printf("2. Exit the program\n");
+        printf("\nEnter a choice from 1 or 2: ");
+        scanf("%d", &choice);
+        printf("\n");
 
-    //     switch (choice) {
-    //     case 1:
-    //         printf("You selected choice #1.\n\n");
-    //         file_menu();
-    //         break;
-    //     case 2:
-    //         printf("Goodbye\n");
-    //         break;
-    //     default:
-    //         printf("You entered an incorrect choice.Try again.\n\n");
-    //     }
-    // }
+        switch (choice) {
+        case 1:
+            printf("You selected choice #1.\n\n");
+            file_menu();
+            break;
+        case 2:
+            printf("Goodbye\n");
+            break;
+        default:
+            printf("You entered an incorrect choice.Try again.\n\n");
+        }
+    }
 
     // Free the movie LL structure allocated
-    //destroy_list(list);
+    // destroy_list(list);
 
     return EXIT_SUCCESS;
 }
@@ -328,26 +334,67 @@ void file_menu()
 void process_file_name(char* fileName)
 {
     // Print the message requirement stating which file we are processing
-    print_processing_file(fileName);
+    print_processing_file(fileName);    
 
-    // Create Linked List of structs
-    struct movie *list = processFile(fileName);
-    // Debug:
-    // print_movie_list(list);
-
-    struct movie* head;
-    head = list;
-    while(head != NULL)
-    {
-        print_debug_movie(head);
-        head = head->next;
+    // Create Directory & print name of directory (onid.movies.random#)
+    char *dirName[256];
+    if(create_directory(dirName) == 1) {
+        printf("Created directory with name %s\n", dirName);
+    } else {
+        printf("ERROR: could not create directory.\n");
     }
 
-
-    // Free the memory
+    // List to hold the movies from the user specified file
+    struct movie* list = processFile(fileName);
+    // Lets not destroy the LL structure
+    struct movie* head;
+    // Loop through the given inclusive year range
+    for (int year = 1900; year <= 2021; year++) {
+        // List to hold movies in a given year
+        struct linkedList* yearList;
+        head = list;
+        while (head != NULL) {
+            if (head->year == year) {
+                // Create a list for the year @ 1st instance of year
+                if(yearList == NULL) {
+                    yearList = linkedListCreate();
+                }
+                // Add the movie to the list
+                linkedListAddBack(yearList, head);                
+            }
+            head = head->next;
+        }
+        if(yearList != NULL){
+            write_movieList_to_file(yearList, dirName, year);
+            linkedListDestroy(yearList);
+        }
+        
+    }
+    // Free memory
     destroy_list(list);
 }
 
+// Write the movies to a file
+void write_movieList_to_file(struct linkedList* list, char* dirName, int year)
+{
+    // Convert int year to string
+    char st_year[5];
+    sprintf(st_year,"%d", year);
+    // Create a file (2020.txt). Permissions: rw-r-----
+    int fd;
+    fd = create_file(dirName, st_year);
+    // Start writing movies to the file
+    struct movieLink* head = list->frontSentinel->next; 
+    while (head != list->backSentinel)
+    {
+        // Write data to the file
+        write_to_file(fd, head->title);
+        head = head->next;
+    }
+
+    // Close the file
+    close_file(fd);
+}
 
 
 // Print the name of the file to be processed
@@ -366,33 +413,51 @@ void file_not_found_msg()
 *   Directories
 *
 *************************************************/
-//
+// Create a directory and return 1 if successful and 0 if not
+// param: char* which is the name of the created directory
 // permissions for directory: rwx r-x ---  ==> 0750
 //
-void create_directory()
+int create_directory(char* dirName)
 {
-    char *dirName[256];
     // Make the directory name
     sprintf(dirName, "%s%d", DIR_PREFIX,random_number());
     if(mkdir(dirName, 0750) == 0) {
-        printf("Created directory with name %s\n", dirName);
+        return 1;
+        //printf("Created directory with name %s\n", dirName);
     } else {
-        printf("ERROR: could not create directory.\n");
+        return 0;
+        //printf("ERROR: could not create directory.\n");
     }
-
 }
 
 
 /************************************************
 *   Files
-*
+*   ref: 3_5_open_close.c from canvas
+*   Permissions: rw-r----- (0640)
 *************************************************/
 
-void create_file()
+int create_file(char* dirName, char* fileName)
 {
-    printf("Inside create_file\n");
+    int fileDescriptor;
+    // Create path
+    char filePath_name[256];
+    sprintf(filePath_name, "%s/%s.txt", dirName, fileName);
+    fileDescriptor = open(filePath_name, O_RDWR | O_CREAT | O_TRUNC | O_APPEND, 0640);
+    return fileDescriptor;
 }
 
+// close a file base on the file's file descriptor
+void close_file(int fileDescriptor)
+{
+    printf("inside close file\n");
+    close(fileDescriptor);
+}
+
+void write_to_file(int fileDescriptor, char* title)
+{
+    write(fileDescriptor, title, strlen(title));
+}
 
 /********************************************************************************
 *   Random Number
