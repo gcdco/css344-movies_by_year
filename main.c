@@ -279,7 +279,7 @@ void file_menu()
         printf("1. Pick the largest file\n");
         printf("2. Pick the smallest file\n");
         printf("3. Specify the name of a file\n");
-        printf("\nEnter a choice from 1 or 3: ");
+        printf("Enter a choice from 1 or 3: ");
         scanf("%d", &choice);
         printf("\n");
 
