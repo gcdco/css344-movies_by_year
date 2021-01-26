@@ -5,45 +5,15 @@
 #include <string.h>
 #include <assert.h>
 
-//struct movieLink 
-// {
-//     char* title;
-//     struct movieLink* next;
-//     struct movieLink* prev;
-// };
-
-// Holds the data about the movie
-// struct movie
-// {
-//     char* title;
-//     int year;
-//     // Print to .1 decimal place %.1f
-//     double rating;
-//     // Hold the head of the language structure
-//     struct language* language;
-//     struct movie* next;
-// };
-
-//struct language
-// {
-//     // Individual language
-//     char* lang;
-//     struct language* next;
-// };
-
-// struct linkedList
-// {
-//     struct movieLink* frontSentinel;
-//     struct movieLink* backSentinel;
-//     int size;
-// };
 
 /************************************************************
 *   HW2: Create LL structure for movies per year from user
 *   selected file
 *   - More general LL creation here
 ************************************************************/
-
+// Initialize the LL list Sentinels and size
+// param: list that holds sentinels
+//
 static void init(struct linkedList* list)
 {
     // Allocate memory for sentinels 
@@ -53,15 +23,17 @@ static void init(struct linkedList* list)
     assert(list->backSentinel != NULL);
     // Hook up sentinels
     list->frontSentinel->next = list->backSentinel;
-    list->frontSentinel->next = NULL;                   // <====
-    list->backSentinel->prev = list->frontSentinel;      // <====
-    list->backSentinel->next =  NULL;    // list->frontSentinel;  <====
+    list->frontSentinel->next = NULL;                   
+    list->backSentinel->prev = list->frontSentinel;     
+    list->backSentinel->next =  NULL;
     
     // initialize start size
     list->size = 0;
 }
 
-// Allocate memory for a
+// Allocate memory for struct to hold sentinels
+// return: pointer to struct linkedList
+//
 struct linkedList* linkedListCreate()
 {
     struct linkedList* list = malloc(sizeof(struct linkedList));
@@ -70,19 +42,12 @@ struct linkedList* linkedListCreate()
     return list;
 }
 
-// void linkedListDestroy(struct LinkedList* list)
-// {
-//     printf("\nInside linkedListDestroy\n");
-// }
-
-// void linkedListPrint(struct LinkedList* list)
-// {
-//     printf("\nInside linkedListPrint\n");
-// }
-
+// Return size of linked list
+// param: LL main list
+// return: size
+//
 int linkedListIsEmpty(struct linkedList* list)
 {
-    printf("\nInside linkedListIsEmpty\n");
     assert(list != NULL);
     // Is the LL empty?
     if(list->size == 0){ return 1;}
@@ -90,8 +55,9 @@ int linkedListIsEmpty(struct linkedList* list)
 }
 
 // In an effort to make life more difficult. I am writing a function to make a new link from
-// the previous assignments movie struct w/o unneeded data... 
-//
+//   the previous assignments movie struct w/o unneeded data... 
+// param: title of movie
+// return: pointer to link in LL
 //
 static struct movieLink* createMovieLink(char* mov_title)
 {
@@ -107,49 +73,35 @@ static struct movieLink* createMovieLink(char* mov_title)
 }
 
 
-//
-//  link = backSentinel
-//  newLink = new struct movie
+// Helper function to add a link. Called by linkedListAddBack()
+//  params:
+//  list: main LL structure
+//  link: backSentinel to add link before
+//  newLink: new struct movie
+//  copyLink: info from old LL structure to copy over
 //
 static void addLinkBefore(struct linkedList* list, struct movieLink* link, TYPE copyLink)
 {
     assert(list != NULL);
-    // createMovie(char* mov_title, int year, char* languages, double rating)
-    //char lang[] = "[English;French]";
+    
+    // Make new link
     struct movieLink* newLink = createMovieLink(copyLink->title);
-    //newLink = copyLink; // <== not a good idea
     assert(newLink != NULL);
     assert(link != NULL);
 
     //newLink->value = value;
 	newLink->prev = link->prev;
 	
+    // Connect the link
 	newLink->next = link;
 	link->prev->next = newLink;
 	link->prev = newLink;
 	list->size++;
-
-    // // Case with no links. have to link up front and back sentinels to new link
-    // if(list->size == 0) // replace with isempty function
-    // {
-    //     // Connect the frontSentinel
-    //     link->next->next = newLink;
-    //     // Connect the back sentinel
-    //     link->next = newLink;
-    // }
-    // // Add a new link when LL is not empty
-    // // Connect the last link pointed to by backSentinel to the newLink
-    // link->next->next = newLink;
-    // // Connect the new last link to the backSentinel
-    // newLink->next = link;
-    // // Connect the backSentinel to the new link
-    // link->next = newLink;
-    // // increase size
-    // list->size++;
 }
 
-// Add a link to the back of the list
-// create a movie and pass it here where TYPE is listed
+// Add a link to the back of the list. Create a movie and pass it here where TYPE is listed
+// params: list: main LL structure
+//         value: struct movie with the movie info 
 //
 void linkedListAddBack(struct linkedList* list, TYPE value)
 {
@@ -157,50 +109,59 @@ void linkedListAddBack(struct linkedList* list, TYPE value)
     addLinkBefore(list, list->backSentinel, value);
 }
 
-// static void removeMovieTitleMemory(struct movieLink* link)
-// {
-//     free(link->title);
-// }
-
-// link = frontSentinel
+// Remove a link in the LL structure. Helper function.
+// params: list: main LL structure
+//         link: link to be removed 
 //
 static void removeLink(struct linkedList* list, struct movieLink* link)
 {
-    //assert(list != NULL);
-    // Place holder
+    // Unhook link
 	link->next->prev = link->prev;
 	link->prev->next = link->next;
-	//removeMovieTitleMemory(link);
+	// Free the memory in allocated link
     free(link->title);
+    // Free memory allocated for link
     free(link);
 	link = 0;
+    // Decrease size of LL
 	list->size--;
 }
 
+//  Remove a link from the front of the LL
+//  params: list: main LL structure
+//
 void linkedListRemoveFront(struct linkedList* list)
 {
-    //assert(list != NULL); // Will this compile?
     removeLink(list, list->frontSentinel->next);
 }
 
+//  Print the LL and info it contains
+//  params: list: main LL structure
+//
 void linkedListPrint(struct linkedList* list)
 {
+    // Get first link and loop till backSentinel is hit
     struct movieLink* head = list->frontSentinel->next;
     while(head != list->backSentinel)
     {
-        //printf("printing\n");
         printf("%s\n", head->title);
         head = head->next;
     }
 }
 
+
+// Destroy the LL structure and free the memory allocated
+//  params: list: main LL structure
+//
 void linkedListDestroy(struct linkedList* list)
 {
     assert(list!= NULL);
-    while(list->size != 0)//(!listLinkIsEmpy(list))
+    while(list->size != 0) // could use isLLEmpty function.. 
     {
+        // Remove each link from the front and free memory
         linkedListRemoveFront(list);
     }
+    // Free the Sentinels
     free(list->frontSentinel);
     free(list->backSentinel);
     free(list);
@@ -247,8 +208,9 @@ struct movie* processFile(char* filePath)
 
     // counter for movies
     int count = 0;
+    char* endOfFile;
     // Loop through file line by line
-    while (fgets(buf, sizeof(buf), movieFile))
+    while ((endOfFile = fgets(buf, sizeof(buf), movieFile)) != NULL)//fgets(buf, sizeof(buf), movieFile)
     {
         // Get the data from the line that follows the pattern
         sscanf(buf, "%[^,],%d,%[^,],%lf\n", &mov_title, &year, &languages, &rating);
@@ -268,7 +230,7 @@ struct movie* processFile(char* filePath)
     fclose(movieFile);
     // Get the "movies.csv" part from the filePath
     char* fileName = parse_file_name(filePath);
-    printf("Processed file %s and parsed data for %d movies.\n", fileName, count);
+    //printf("Processed file %s and parsed data for %d movies.\n", fileName, count);
 
     // Head of the LL
     return head;

@@ -42,12 +42,11 @@ struct movie
 
 /****************************************************************************************************
 * More general LL structure
-*
+* ref: adapted from cs261 course
 ****************************************************************************************************/
 
+// For use in LL structure
 #ifndef TYPE
-// Trying a pointer... Is this right? 12:30am
-// This fixed the error's compiling
 #define TYPE struct movie*  
 #endif
 
@@ -59,7 +58,7 @@ void linkedListAddBack(struct linkedList*, TYPE);
 void linkedListRemoveFront(struct linkedList*);
 
 /****************************************************************************************************
-* Movie LL structure
+* Movie LL structure from hw1
 *
 ****************************************************************************************************/
 
@@ -79,6 +78,3 @@ void print_debug_languages(struct movie*); // Print the languages to make sure i
 
 
 #endif
-
-
-
